@@ -1,1 +1,745 @@
-[]
+{
+  "expenses": [
+    {
+      "id": "imported-2026-07-8-rmial",
+      "storeName": "スプレッドシート移行",
+      "name": "楽天キャッシング",
+      "price": 0,
+      "category": "debtRepayment",
+      "date": "2026-07-01",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.296Z"
+    },
+    {
+      "id": "imported-2026-07-9-1debi",
+      "storeName": "スプレッドシート移行",
+      "name": "エポスカード",
+      "price": 0,
+      "category": "debtRepayment",
+      "date": "2026-07-01",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.296Z"
+    },
+    {
+      "id": "imported-2026-07-10-jyqh8",
+      "storeName": "スプレッドシート移行",
+      "name": "大学学費",
+      "price": 0,
+      "category": "debtRepayment",
+      "date": "2026-07-01",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.296Z"
+    },
+    {
+      "id": "imported-2026-07-11-20gsm",
+      "storeName": "スプレッドシート移行",
+      "name": "ガスト",
+      "price": 0,
+      "category": "eatingOut",
+      "date": "2026-07-02",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.296Z"
+    },
+    {
+      "id": "imported-2026-07-12-x3bn2",
+      "storeName": "スプレッドシート移行",
+      "name": "お菓子るみえーる",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-01",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.296Z"
+    },
+    {
+      "id": "imported-2026-07-13-3o6xm",
+      "storeName": "スプレッドシート移行",
+      "name": "ルミエール",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-01",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.296Z"
+    },
+    {
+      "id": "imported-2026-07-14-t02cz",
+      "storeName": "スプレッドシート移行",
+      "name": "ルミエール",
+      "price": 0,
+      "category": "daily",
+      "date": "2026-07-01",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.296Z"
+    },
+    {
+      "id": "imported-2026-07-15-ma823",
+      "storeName": "スプレッドシート移行",
+      "name": "チョコザップ",
+      "price": 0,
+      "category": "subscription",
+      "date": "2026-07-27",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-16-84oka",
+      "storeName": "スプレッドシート移行",
+      "name": "集計表の手入力を移行",
+      "price": 0,
+      "category": "childcare",
+      "date": "2026-07-22",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-17-xsx2v",
+      "storeName": "スプレッドシート移行",
+      "name": "集計表の手入力を移行",
+      "price": 0,
+      "category": "transport",
+      "date": "2026-07-22",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-18-k7rb1",
+      "storeName": "スプレッドシート移行",
+      "name": "集計表の手入力を移行",
+      "price": 0,
+      "category": "housing",
+      "date": "2026-07-22",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-19-m1ref",
+      "storeName": "スプレッドシート移行",
+      "name": "集計表の手入力を移行",
+      "price": 0,
+      "category": "utility",
+      "date": "2026-07-22",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-20-577rw",
+      "storeName": "スプレッドシート移行",
+      "name": "集計表の手入力を移行",
+      "price": 0,
+      "category": "telecom",
+      "date": "2026-07-22",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-21-tjxo9",
+      "storeName": "スプレッドシート移行",
+      "name": "集計表の手入力を移行",
+      "price": 0,
+      "category": "insurance",
+      "date": "2026-07-01",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-22-k8rl5",
+      "storeName": "ルミエール",
+      "name": "プリンターインク黒(ルミエール)",
+      "price": 0,
+      "category": "daily",
+      "date": "2026-07-01",
+      "paymentMethod": "その他",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-23-inmt4",
+      "storeName": "スプレッドシート移行",
+      "name": "集計表の手入力を移行",
+      "price": 0,
+      "category": "savings",
+      "date": "2026-07-01",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-24-2t6zx",
+      "storeName": "スプレッドシート移行",
+      "name": "セブンパンアイス",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-04",
+      "paymentMethod": "貯金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-25-v79qk",
+      "storeName": "スプレッドシート移行",
+      "name": "ミニストップここな",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-01",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-26-dxk9o",
+      "storeName": "スプレッドシート移行",
+      "name": "セブンパン",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-03",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-27-sbz27",
+      "storeName": "スプレッドシート移行",
+      "name": "駐輪場代",
+      "price": 0,
+      "category": "transport",
+      "date": "2026-07-03",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-28-vq1ct",
+      "storeName": "りおちゃんばあば立替精算",
+      "name": "ボンボンドロップシール(りおちゃんばあば立替精算)",
+      "price": 0,
+      "category": "childcare",
+      "date": "2026-07-08",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-29-r0566",
+      "storeName": "スプレッドシート移行",
+      "name": "カフェオレ",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-06",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-30-yhpv7",
+      "storeName": "パン、お菓子、夕飯、さち昼食",
+      "name": "サニー(パン、お菓子、夕飯、さち昼食)",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-07",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-31-ikmbo",
+      "storeName": "お菓子,飲み物,夜飯",
+      "name": "セブン(お菓子,飲み物,夜飯)",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-07",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-32-yszo8",
+      "storeName": "スプレッドシート移行",
+      "name": "駐輪場代",
+      "price": 0,
+      "category": "transport",
+      "date": "2026-07-08",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-33-b50o0",
+      "storeName": "スプレッドシート移行",
+      "name": "駐輪場代",
+      "price": 0,
+      "category": "transport",
+      "date": "2026-07-09",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-34-awfrf",
+      "storeName": "マツキヨ",
+      "name": "洗面用品(マツキヨ)",
+      "price": 0,
+      "category": "daily",
+      "date": "2026-07-09",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-35-rte5b",
+      "storeName": "ローソン",
+      "name": "夕飯(ローソン)",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-09",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-36-3i4gg",
+      "storeName": "ルミエール",
+      "name": "食品、お菓子(ルミエール)",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-09",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-37-mdqi0",
+      "storeName": "ルミエール",
+      "name": "タクシー用品(ルミエール)",
+      "price": 0,
+      "category": "other",
+      "date": "2026-07-09",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-38-52bz1",
+      "storeName": "ルミエール",
+      "name": "ゴミ袋、アルミホイル(ルミエール)",
+      "price": 0,
+      "category": "daily",
+      "date": "2026-07-09",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-39-4eg3j",
+      "storeName": "ルミエール",
+      "name": "タイルシール(ルミエール)",
+      "price": 0,
+      "category": "childcare",
+      "date": "2026-07-09",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-40-2u8bo",
+      "storeName": "コッペリア",
+      "name": "パン(コッペリア)",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-10",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-41-fsosy",
+      "storeName": "ミニスト",
+      "name": "アイス(ミニスト)",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-10",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-42-ndgw5",
+      "storeName": "スピーカー、電池、温度計",
+      "name": "ダイソー(スピーカー、電池、温度計)",
+      "price": 0,
+      "category": "daily",
+      "date": "2026-07-10",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-43-d7hhq",
+      "storeName": "スプレッドシート移行",
+      "name": "食品、アイス",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-12",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-44-fi157",
+      "storeName": "セリア",
+      "name": "マスクとか(セリア)",
+      "price": 0,
+      "category": "daily",
+      "date": "2026-07-13",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-46-7102m",
+      "storeName": "サニー",
+      "name": "食品(サニー)",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-15",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-47-8qzu4",
+      "storeName": "グッディ",
+      "name": "洗面、洗濯用品(グッディ)",
+      "price": 0,
+      "category": "daily",
+      "date": "2026-07-16",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-48-vrb3s",
+      "storeName": "グッディ",
+      "name": "メダカ(グッディ)",
+      "price": 0,
+      "category": "hobby",
+      "date": "2026-07-16",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-49-ichcx",
+      "storeName": "グッディ",
+      "name": "食品(グッディ)",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-16",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-50-niszc",
+      "storeName": "ファミマ",
+      "name": "食品(ファミマ)",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-16",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-51-dxaw8",
+      "storeName": "さやか先生",
+      "name": "ダンス衣装代、出演料(さやか先生)",
+      "price": 0,
+      "category": "childcare",
+      "date": "2026-07-15",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-52-vhszj",
+      "storeName": "マックスバリュ",
+      "name": "食品(マックスバリュ)",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-17",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-53-0bszl",
+      "storeName": "さやか先生・あい先生/8月分",
+      "name": "ダンス月謝(さやか先生・あい先生/8月分)",
+      "price": 0,
+      "category": "childcare",
+      "date": "2026-07-17",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-54-cw9q5",
+      "storeName": "ディスカバリー/6月分",
+      "name": "おやつ・昼食代(ディスカバリー/6月分)",
+      "price": 0,
+      "category": "childcare",
+      "date": "2026-07-17",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-55-rjia8",
+      "storeName": "ディスカバリー/7月18日分",
+      "name": "おやつ代(ディスカバリー/7月18日分)",
+      "price": 0,
+      "category": "childcare",
+      "date": "2026-07-17",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-56-f1b8f",
+      "storeName": "スプレッドシート移行",
+      "name": "駐輪場代",
+      "price": 0,
+      "category": "transport",
+      "date": "2026-07-16",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-57-j5ivq",
+      "storeName": "スプレッドシート移行",
+      "name": "駐輪場代",
+      "price": 0,
+      "category": "transport",
+      "date": "2026-07-17",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-58-uxwcg",
+      "storeName": "スプレッドシート移行",
+      "name": "駐輪場代",
+      "price": 0,
+      "category": "transport",
+      "date": "2026-07-21",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-59-ete4x",
+      "storeName": "スプレッドシート移行",
+      "name": "駐輪場代",
+      "price": 0,
+      "category": "transport",
+      "date": "2026-07-15",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-60-9y1qc",
+      "storeName": "太宰府スイミング",
+      "name": "サマーキャンプ代(太宰府スイミング)",
+      "price": 0,
+      "category": "childcare",
+      "date": "2026-07-23",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-61-ku0mg",
+      "storeName": "ノコマート",
+      "name": "能古島旅行お土産、食品(ノコマート)",
+      "price": 0,
+      "category": "special",
+      "date": "2026-07-24",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-62-k4egy",
+      "storeName": "セブンイレブン",
+      "name": "ここなアイス(セブンイレブン)",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-25",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-63-8uepg",
+      "storeName": "スプレッドシート移行",
+      "name": "駐輪場代",
+      "price": 0,
+      "category": "transport",
+      "date": "2026-07-28",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-64-t3e8b",
+      "storeName": "セブンイレブン",
+      "name": "スムージー(セブンイレブン)",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-28",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-65-9jpaq",
+      "storeName": "朝食/セブンイレブン",
+      "name": "食品(朝食/セブンイレブン)",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-24",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-66-lh8xa",
+      "storeName": "能古島夜食/フードウェイ小戸",
+      "name": "食品(能古島夜食/フードウェイ小戸)",
+      "price": 0,
+      "category": "special",
+      "date": "2026-07-24",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-67-g6kmw",
+      "storeName": "能古島夜食/フードウェイ小戸",
+      "name": "食品(能古島夜食/フードウェイ小戸)",
+      "price": 0,
+      "category": "special",
+      "date": "2026-07-24",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-68-ztcnw",
+      "storeName": "のこのしまアイランドパーク",
+      "name": "お土産(のこのしまアイランドパーク)",
+      "price": 0,
+      "category": "special",
+      "date": "2026-07-25",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-69-ms8a6",
+      "storeName": "ノコマート",
+      "name": "お土産(ノコマート)",
+      "price": 0,
+      "category": "special",
+      "date": "2026-07-25",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-70-wgn0k",
+      "storeName": "セブンイレブン",
+      "name": "食品(セブンイレブン)",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-25",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-71-yy3r5",
+      "storeName": "グッディ",
+      "name": "食品、日用品(グッディ)",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-11",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-72-7ftmp",
+      "storeName": "ルミエール",
+      "name": "食品(ルミエール)",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-11",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-73-wtd8f",
+      "storeName": "スプレッドシート移行",
+      "name": "駐輪場代",
+      "price": 0,
+      "category": "transport",
+      "date": "2026-07-29",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-74-nfdm2",
+      "storeName": "セリア",
+      "name": "雑貨(セリア)",
+      "price": 0,
+      "category": "daily",
+      "date": "2026-07-30",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-75-j3cmh",
+      "storeName": "サニー",
+      "name": "食品(サニー)",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-30",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-76-fen4z",
+      "storeName": "マツモトキヨシ",
+      "name": "日用品(マツモトキヨシ)",
+      "price": 0,
+      "category": "daily",
+      "date": "2026-07-30",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-77-vp3s6",
+      "storeName": "スプレッドシート移行",
+      "name": "駐輪場代",
+      "price": 0,
+      "category": "transport",
+      "date": "2026-07-31",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-07-78-jahv6",
+      "storeName": "マックスバリュ",
+      "name": "食品(マックスバリュ)",
+      "price": 0,
+      "category": "food",
+      "date": "2026-07-31",
+      "paymentMethod": "現金",
+      "createdAt": "2026-08-17T01:42:14.297Z"
+    },
+    {
+      "id": "imported-2026-08-6-wes18",
+      "storeName": "ゆめタウン",
+      "name": "スペシャルおやつ(ゆめタウン)",
+      "price": 0,
+      "category": "childcare",
+      "date": "2026-08-01",
+      "paymentMethod": "食費",
+      "createdAt": "2026-08-17T01:42:15.813Z"
+    },
+    {
+      "id": "imported-2026-08-7-qo31c",
+      "storeName": "セブンイレブン",
+      "name": "食品(セブンイレブン)",
+      "price": 0,
+      "category": "food",
+      "date": "2026-08-02",
+      "paymentMethod": "外食",
+      "createdAt": "2026-08-17T01:42:15.813Z"
+    }
+  ],
+  "budgets": {
+    "food": 0,
+    "eatingOut": 10000,
+    "daily": 0,
+    "childcare": 26210,
+    "transport": 3000,
+    "housing": 67331,
+    "utility": 15000,
+    "telecom": 12389,
+    "medical": 0,
+    "beautyClothing": 0,
+    "hobby": 0,
+    "education": 0,
+    "subscription": 0,
+    "special": 0,
+    "insurance": 18732,
+    "taxes": 0,
+    "savings": 15000,
+    "debtRepayment": 15000,
+    "other": 28500
+  }
+}
