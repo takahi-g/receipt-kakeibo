@@ -370,18 +370,28 @@ export default function ReceiptScanner({ apiKey, onAddExpenses, expenses = [] })
     }
 
     const data = await response.json();
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const candidate = data.candidates?.[0];
+    const text = candidate?.content?.parts?.[0]?.text;
     if (text) {
       const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
       const match = cleanText.match(/\{[\s\S]*\}/);
       let jsonCandidate = match ? match[0] : cleanText;
 
-      let parsed = JSON.parse(jsonCandidate);
-      if (!parsed.receipts && parsed.items) return { receipts: [parsed] };
-      if (parsed.receipts) return parsed;
-      return parsed;
+      let parsed = null;
+      try {
+        parsed = JSON.parse(jsonCandidate);
+      } catch (e) {
+        throw new Error("AIが文字を読み取りましたがJSON変換に失敗しました。もう一度撮影してください。");
+      }
+      if (parsed) {
+        if (!parsed.receipts && parsed.items) return { receipts: [parsed] };
+        if (parsed.receipts) return parsed;
+        if (Array.isArray(parsed)) return { receipts: parsed };
+        return { receipts: [parsed] };
+      }
     }
-    throw new Error("AIからの応答を解析できませんでした。画像のピントや明るさをご確認ください。");
+    const finishReason = candidate?.finishReason || "UNKNOWN";
+    throw new Error(`AI応答解析失敗 (理由: ${finishReason})。画像が不鮮明な可能性があります。`);
   };
 
   // スキャン実行
