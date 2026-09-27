@@ -94,7 +94,7 @@ export default function ReceiptScanner({ apiKey, onAddExpenses, expenses = [] })
     }
     const cleanKey = apiKey.trim();
     const candidateModels = [
-      { name: "gemini-3.8-flash (v1beta)", base: "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent" }
+      { name: "gemini-1.5-flash (v1beta)", base: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent" }
     ];
 
     let successModel = null;
@@ -332,8 +332,8 @@ export default function ReceiptScanner({ apiKey, onAddExpenses, expenses = [] })
   ]
 }`;
 
-    // Google API の正格接続 (?key= と x-goog-api-key の両方対応)
-    const baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent";
+    // Google API の標準接続 (gemini-1.5-flash:generateContent)
+    const baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
     const targetUrl = `${baseUrl}?key=${cleanKey}`;
 
     const response = await fetch(targetUrl, {
