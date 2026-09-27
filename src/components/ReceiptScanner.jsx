@@ -94,10 +94,7 @@ export default function ReceiptScanner({ apiKey, onAddExpenses, expenses = [] })
     }
     const cleanKey = apiKey.trim();
     const candidateModels = [
-      { name: "gemini-2.5-flash (v1beta)", base: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent" },
-      { name: "gemini-2.0-flash (v1beta)", base: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent" },
-      { name: "gemini-1.5-flash (v1)",     base: "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent" },
-      { name: "gemini-1.5-flash (v1beta)", base: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent" }
+      { name: "gemini-3.8-flash (v1beta)", base: "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent" }
     ];
 
     let successModel = null;
@@ -335,8 +332,8 @@ export default function ReceiptScanner({ apiKey, onAddExpenses, expenses = [] })
   ]
 }`;
 
-    // Google API の正格接続 (gemini-2.5-flash 1発通信)
-    const targetUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
+    // Google API の正格接続 (Google画面指示通りの gemini-3.8-flash エンドポイント)
+    const targetUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent";
 
     const response = await fetch(targetUrl, {
       method: "POST",
