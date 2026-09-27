@@ -332,8 +332,9 @@ export default function ReceiptScanner({ apiKey, onAddExpenses, expenses = [] })
   ]
 }`;
 
-    // Google API の正格接続 (Google画面指示通りの gemini-3.8-flash エンドポイント)
-    const targetUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent";
+    // Google API の正格接続 (?key= と x-goog-api-key の両方対応)
+    const baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent";
+    const targetUrl = `${baseUrl}?key=${cleanKey}`;
 
     const response = await fetch(targetUrl, {
       method: "POST",
