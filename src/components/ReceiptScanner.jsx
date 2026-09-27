@@ -86,42 +86,56 @@ export default function ReceiptScanner({ apiKey, onAddExpenses, expenses = [] })
     { name: "gemini-1.5-flash (v1beta)", url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${cleanKey}` }
   ];
 
-  // APIキーの自己診断テスト関数 (全モデル自動探索型)
+  // APIキーの自己診断テスト関数 (全モデル自動探索型・x-goog-api-key対応)
   const testApiKeyConnection = async () => {
     if (!apiKey) {
       alert("⚠️ APIキーが入力されていません。右上の「⚙️ アプリの設定」から設定してください。");
       return;
     }
     const cleanKey = apiKey.trim();
-    const endpoints = getCandidateEndpoints(cleanKey);
+    const candidateModels = [
+      { name: "gemini-2.5-flash (v1beta)", base: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent" },
+      { name: "gemini-2.0-flash (v1beta)", base: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent" },
+      { name: "gemini-1.5-flash (v1)",     base: "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent" },
+      { name: "gemini-1.5-flash (v1beta)", base: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent" }
+    ];
+
     let successModel = null;
     let lastErr = "";
 
-    for (const ep of endpoints) {
-      try {
-        const res = await fetch(ep.url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: "Hello" }] }]
-          })
-        });
-        if (res.ok) {
-          successModel = ep.name;
-          break;
-        } else {
-          const errData = await res.json().catch(() => ({}));
-          lastErr = errData.error?.message || `HTTP ${res.status}`;
+    for (const m of candidateModels) {
+      const configs = [
+        { url: m.base, headers: { "Content-Type": "application/json", "x-goog-api-key": cleanKey } },
+        { url: `${m.base}?key=${cleanKey}`, headers: { "Content-Type": "application/json" } }
+      ];
+
+      for (const cfg of configs) {
+        try {
+          const res = await fetch(cfg.url, {
+            method: "POST",
+            headers: cfg.headers,
+            body: JSON.stringify({
+              contents: [{ role: "user", parts: [{ text: "Hello" }] }]
+            })
+          });
+          if (res.ok) {
+            successModel = m.name;
+            break;
+          } else {
+            const errData = await res.json().catch(() => ({}));
+            lastErr = errData.error?.message || `HTTP ${res.status}`;
+          }
+        } catch (e) {
+          lastErr = e.message;
         }
-      } catch (e) {
-        lastErr = e.message;
       }
+      if (successModel) break;
     }
 
     if (successModel) {
       alert(`✅ 通信成功！ご使用のAPIキーで『${successModel}』への正常接続を確認できました！`);
     } else {
-      alert(`❌ APIキー接続エラー: ${lastErr}\n\n※ご使用のAPIキーで全モデルが拒否されました。APIキーの権限をご確認ください。`);
+      alert(`❌ APIキー接続エラー: ${lastErr}\n\n※ご使用のAPIキーで全モデルが拒否されました。APIキーの権限またはGoogle AI Studioの有効化をご確認ください。`);
     }
   };
 
