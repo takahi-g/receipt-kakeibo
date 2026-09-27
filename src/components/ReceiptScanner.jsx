@@ -335,96 +335,55 @@ export default function ReceiptScanner({ apiKey, onAddExpenses, expenses = [] })
   ]
 }`;
 
-    // Google API の正格接続エンドポイント群
-    const ENDPOINTS = [
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
-      "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent",
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
-    ];
+    // Google API の正格接続 (gemini-2.5-flash 1発通信)
+    const targetUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 
-    let lastErrorMsg = "";
-
-    for (const baseUrl of ENDPOINTS) {
-      // 1. x-goog-api-key ヘッダー形式 2. ?key= クエリ形式
-      const reqConfigs = [
-        {
-          url: baseUrl,
-          headers: {
-            "Content-Type": "application/json",
-            "x-goog-api-key": cleanKey
-          }
-        },
-        {
-          url: `${baseUrl}?key=${cleanKey}`,
-          headers: {
-            "Content-Type": "application/json"
-          }
-        }
-      ];
-
-      for (const cfg of reqConfigs) {
-        try {
-          const response = await fetch(cfg.url, {
-            method: "POST",
-            headers: cfg.headers,
-            body: JSON.stringify({
-              contents: [
-                {
-                  role: "user",
-                  parts: [
-                    { text: promptText },
-                    {
-                      inline_data: {
-                        mime_type: finalMimeType,
-                        data: cleanBase64
-                      }
-                    }
-                  ]
+    const response = await fetch(targetUrl, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": cleanKey
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: "user",
+            parts: [
+              { text: promptText },
+              {
+                inline_data: {
+                  mime_type: finalMimeType,
+                  data: cleanBase64
                 }
-              ],
-              generationConfig: {
-                response_mime_type: "application/json"
               }
-            })
-          });
-
-          if (!response.ok) {
-            const errJson = await response.json().catch(() => ({}));
-            lastErrorMsg = errJson.error?.message || `HTTP ${response.status}`;
-            console.warn(`[ReceiptScanner] Endpoint ${cfg.url} error:`, lastErrorMsg);
-            continue;
+            ]
           }
-
-          const data = await response.json();
-          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-          if (text) {
-            const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
-            const match = cleanText.match(/\{[\s\S]*\}/);
-            let jsonCandidate = match ? match[0] : cleanText;
-
-            let parsed = null;
-            try {
-              parsed = JSON.parse(jsonCandidate);
-            } catch {
-              try {
-                parsed = JSON.parse(jsonCandidate + "}]}}");
-              } catch {}
-            }
-
-            if (parsed) {
-              if (!parsed.receipts && parsed.items) return { receipts: [parsed] };
-              if (parsed.receipts) return parsed;
-            }
-          }
-        } catch (e) {
-          lastErrorMsg = e.message;
-          continue;
+        ],
+        generationConfig: {
+          response_mime_type: "application/json"
         }
-      }
+      })
+    });
+
+    if (!response.ok) {
+      const errJson = await response.json().catch(() => ({}));
+      const errMsg = errJson.error?.message || `HTTP ${response.status}`;
+      throw new Error(errMsg);
     }
 
-    throw new Error(lastErrorMsg || "AIでのレシート解析に失敗しました。画像のピントや明るさをご確認ください。");
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (text) {
+      const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
+      const match = cleanText.match(/\{[\s\S]*\}/);
+      let jsonCandidate = match ? match[0] : cleanText;
+
+      let parsed = JSON.parse(jsonCandidate);
+      if (!parsed.receipts && parsed.items) return { receipts: [parsed] };
+      if (parsed.receipts) return parsed;
+      return parsed;
+    }
+    throw new Error("AIからの応答を解析できませんでした。画像のピントや明るさをご確認ください。");
   };
 
   // スキャン実行
