@@ -331,66 +331,86 @@ export default function ReceiptScanner({ apiKey, onAddExpenses, expenses = [] })
   ]
 }`;
 
-    // Google API の標準接続 (gemini-1.5-flash:generateContent)
-    const baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
-    const targetUrl = `${baseUrl}?key=${cleanKey}`;
+    const candidateEndpoints = [
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+      "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent"
+    ];
 
-    const response = await fetch(targetUrl, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": cleanKey
-      },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: "user",
-            parts: [
-              { text: promptText },
-              {
-                inline_data: {
-                  mime_type: finalMimeType,
-                  data: cleanBase64
-                }
-              }
-            ]
-          }
-        ],
-        generationConfig: {
-          response_mime_type: "application/json"
-        }
-      })
-    });
+    let lastError = "";
 
-    if (!response.ok) {
-      const errJson = await response.json().catch(() => ({}));
-      const errMsg = errJson.error?.message || `HTTP ${response.status}`;
-      throw new Error(errMsg);
-    }
-
-    const data = await response.json();
-    const candidate = data.candidates?.[0];
-    const text = candidate?.content?.parts?.[0]?.text;
-    if (text) {
-      const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
-      const match = cleanText.match(/\{[\s\S]*\}/);
-      let jsonCandidate = match ? match[0] : cleanText;
-
-      let parsed = null;
+    for (const baseUrl of candidateEndpoints) {
+      const targetUrl = `${baseUrl}?key=${cleanKey}`;
       try {
-        parsed = JSON.parse(jsonCandidate);
-      } catch (e) {
-        throw new Error("AIが文字を読み取りましたがJSON変換に失敗しました。もう一度撮影してください。");
-      }
-      if (parsed) {
-        if (!parsed.receipts && parsed.items) return { receipts: [parsed] };
-        if (parsed.receipts) return parsed;
-        if (Array.isArray(parsed)) return { receipts: parsed };
-        return { receipts: [parsed] };
+        const response = await fetch(targetUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": cleanKey
+          },
+          body: JSON.stringify({
+            contents: [
+              {
+                role: "user",
+                parts: [
+                  { text: promptText },
+                  {
+                    inline_data: {
+                      mime_type: finalMimeType,
+                      data: cleanBase64
+                    }
+                  }
+                ]
+              }
+            ],
+            generationConfig: {
+              response_mime_type: "application/json"
+            }
+          })
+        });
+
+        if (!response.ok) {
+          const errJson = await response.json().catch(() => ({}));
+          lastError = errJson.error?.message || `HTTP ${response.status} (${response.statusText})`;
+          console.warn(`[Gemini API Warning] ${baseUrl}:`, lastError);
+          continue;
+        }
+
+        const data = await response.json();
+        const candidate = data.candidates && data.candidates.length > 0 ? data.candidates[0] : null;
+        if (!candidate) {
+          lastError = "AIサーバーからのレスポンス候補が存在しません。";
+          continue;
+        }
+
+        const text = candidate.content?.parts?.[0]?.text;
+        if (text) {
+          const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
+          const match = cleanText.match(/\{[\s\S]*\}/);
+          let jsonCandidate = match ? match[0] : cleanText;
+
+          let parsed = null;
+          try {
+            parsed = JSON.parse(jsonCandidate);
+          } catch (e) {
+            lastError = "AIが文字を読み取りましたがJSON構造化に失敗しました。";
+            continue;
+          }
+          if (parsed) {
+            if (!parsed.receipts && parsed.items) return { receipts: [parsed] };
+            if (parsed.receipts && Array.isArray(parsed.receipts)) return parsed;
+            if (Array.isArray(parsed)) return { receipts: parsed };
+            return { receipts: [parsed] };
+          }
+        }
+        const finishReason = candidate.finishReason || "UNKNOWN";
+        lastError = `AI応答解析失敗 (理由: ${finishReason})`;
+      } catch (err) {
+        lastError = err.message || err.toString();
       }
     }
-    const finishReason = candidate?.finishReason || "UNKNOWN";
-    throw new Error(`AI応答解析失敗 (理由: ${finishReason})。画像が不鮮明な可能性があります。`);
+
+    throw new Error(lastError || "AIでのレシート解析に失敗しました。APIキーまたは接続をご確認ください。");
   };
 
   // スキャン実行
