@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { 
   Camera, 
@@ -68,13 +68,104 @@ const SAMPLE_RECEIPTS = [
   }
 ];
 
-export default function ReceiptScanner({ apiKey, onAddExpenses }) {
+export default function ReceiptScanner({ apiKey, onAddExpenses, expenses = [] }) {
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scanResult, setScanResult] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [excludedIndexes, setExcludedIndexes] = useState([]); // 一括登録から除外するレシートのインデックス
   const fileInputRef = useRef(null);
+
+  // 全モデル自動探索エンドポイント生成
+  const getCandidateEndpoints = (cleanKey) => [
+    { name: "gemini-2.5-flash (v1beta)", url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${cleanKey}` },
+    { name: "gemini-2.0-flash (v1beta)", url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${cleanKey}` },
+    { name: "gemini-1.5-flash (v1)",     url: `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${cleanKey}` },
+    { name: "gemini-1.5-flash-8b (v1beta)", url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent?key=${cleanKey}` },
+    { name: "gemini-1.5-flash (v1beta)", url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${cleanKey}` }
+  ];
+
+  // APIキーの自己診断テスト関数 (全モデル自動探索型)
+  const testApiKeyConnection = async () => {
+    if (!apiKey) {
+      alert("⚠️ APIキーが入力されていません。右上の「⚙️ アプリの設定」から設定してください。");
+      return;
+    }
+    const cleanKey = apiKey.trim();
+    const endpoints = getCandidateEndpoints(cleanKey);
+    let successModel = null;
+    let lastErr = "";
+
+    for (const ep of endpoints) {
+      try {
+        const res = await fetch(ep.url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: "Hello" }] }]
+          })
+        });
+        if (res.ok) {
+          successModel = ep.name;
+          break;
+        } else {
+          const errData = await res.json().catch(() => ({}));
+          lastErr = errData.error?.message || `HTTP ${res.status}`;
+        }
+      } catch (e) {
+        lastErr = e.message;
+      }
+    }
+
+    if (successModel) {
+      alert(`✅ 通信成功！ご使用のAPIキーで『${successModel}』への正常接続を確認できました！`);
+    } else {
+      alert(`❌ APIキー接続エラー: ${lastErr}\n\n※ご使用のAPIキーで全モデルが拒否されました。APIキーの権限をご確認ください。`);
+    }
+  };
+
+  // 除外トグル
+  const toggleExclude = (index) => {
+    setExcludedIndexes((prev) =>
+      prev.includes(index) ? prev.filter((i) => i !== index) : [...prev, index]
+    );
+  };
+
+  // 既存データとの重複チェック
+  const checkDuplicate = (receipt) => {
+    if (!expenses || expenses.length === 0) return null;
+    const cleanStore = (receipt.storeName || "").replace(/\s+/g, "").toLowerCase();
+
+    return expenses.find((e) => {
+      const isSameDate = e.date === receipt.date;
+      const cleanEStore = (e.storeName || "").replace(/\s+/g, "").toLowerCase();
+      const isStoreMatch = cleanStore && cleanEStore && (cleanStore.includes(cleanEStore) || cleanEStore.includes(cleanStore));
+      
+      // レシートの品目の中に、既存明細の品名・金額と一致するものがあるか
+      const hasMatchingItem = receipt.items && receipt.items.some((item) => {
+        const cleanItemName = (item.name || "").replace(/\s+/g, "").toLowerCase();
+        const cleanEName = (e.name || "").replace(/\s+/g, "").toLowerCase();
+        const isNameSimilar = cleanItemName.includes(cleanEName) || cleanEName.includes(cleanItemName);
+        const isPriceSame = Number(e.price) === Number(item.price);
+        return isNameSimilar && isPriceSame;
+      });
+
+      return isSameDate && isStoreMatch && hasMatchingItem;
+    });
+  };
+
+  // 解析結果受信時に結果カードへ自動スクロール
+  useEffect(() => {
+    if (scanResult) {
+      setTimeout(() => {
+        const el = document.getElementById("scan-result-card");
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 100);
+    }
+  }, [scanResult]);
 
   // ファイル選択ハンドラ
   const handleFileChange = (e) => {
@@ -82,6 +173,37 @@ export default function ReceiptScanner({ apiKey, onAddExpenses }) {
     if (file) {
       processFile(file);
     }
+  };
+
+  // スマホ撮影画像の自動最適化・軽量化 (複数枚レシート撮影時のタイムアウト・容量オーバーを防止)
+  const compressImageForGemini = (dataUrl) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX_SIZE = 1600;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > MAX_SIZE || height > MAX_SIZE) {
+          if (width > height) {
+            height = Math.round((height * MAX_SIZE) / width);
+            width = MAX_SIZE;
+          } else {
+            width = Math.round((width * MAX_SIZE) / height);
+            height = MAX_SIZE;
+          }
+        }
+
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.85));
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
   };
 
   const processFile = (file) => {
@@ -93,11 +215,45 @@ export default function ReceiptScanner({ apiKey, onAddExpenses }) {
     setSelectedImage(file);
     
     const reader = new FileReader();
-    reader.onload = () => {
-      setImagePreviewUrl(reader.result);
+    reader.onload = async () => {
+      const rawDataUrl = reader.result;
+      setImagePreviewUrl(rawDataUrl);
       setScanResult(null);
+      // 高解像度・複数枚レシート画像を自動最適化して解析へ
+      const compressedUrl = await compressImageForGemini(rawDataUrl);
+      triggerAutoScan(compressedUrl);
     };
     reader.readAsDataURL(file);
+  };
+
+  // 自動スキャン処理のキック (撮影された実画像を純粋AIリアルタイム解析)
+  const triggerAutoScan = async (imageUrl) => {
+    setIsScanning(true);
+    setErrorMessage("");
+    setExcludedIndexes([]);
+
+    try {
+      if (!apiKey || !apiKey.trim()) {
+        await new Promise((res) => setTimeout(res, 1000));
+        setScanResult({
+          receipts: [SAMPLE_RECEIPTS[0]],
+          isDemoResult: true
+        });
+      } else {
+        const result = await parseReceiptWithGemini(imageUrl);
+        setScanResult({
+          id: Date.now().toString(),
+          isDemoResult: false,
+          ...result
+        });
+      }
+    } catch (err) {
+      console.error("AI Auto Scan Error:", err);
+      const rawMsg = err.message || err.toString() || "不明なエラー";
+      setErrorMessage(`⚠️ レシートAI解析エラー: ${rawMsg}`);
+    } finally {
+      setIsScanning(false);
+    }
   };
 
   // Drag & Drop
@@ -107,74 +263,154 @@ export default function ReceiptScanner({ apiKey, onAddExpenses }) {
     if (file) processFile(file);
   };
 
-  // Gemini Vision API によるリアル解析 (GoogleGenerativeAI SDK 接続)
+  // Gemini Vision API によるリアル解析 (x-goog-api-key ヘッダー ＆ 正格 REST プロトコル対応)
   const parseReceiptWithGemini = async (base64Image) => {
-    if (!apiKey) {
-      throw new Error("Gemini APIキーが設定されていません。右上の「設定」からAPIキーを入力してください。");
+    if (!apiKey || !apiKey.trim()) {
+      throw new Error("Gemini APIキーが設定されていません。右上の「⚙️ アプリの設定」からAPIキーを入力してください。");
     }
 
-    // base64データからMIMEタイプを自動判別
     const mimeTypeMatch = base64Image.match(/^data:(image\/\w+);base64,/);
     const detectedMimeType = mimeTypeMatch ? mimeTypeMatch[1] : "image/jpeg";
-    
-    // HEIC等の未対応形式や不明な形式の場合はjpegにフォールバック
     const finalMimeType = ["image/jpeg", "image/png", "image/webp"].includes(detectedMimeType) 
       ? detectedMimeType 
       : "image/jpeg";
 
     const cleanBase64 = base64Image.replace(/^data:image\/\w+;base64,/, "");
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const cleanKey = apiKey.trim();
 
-    // 高速・高精度でレシート読解に最適な公式モデルを指定
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-3.5-flash",
-      generationConfig: { responseMimeType: "application/json" }
-    });
+    const promptText = `この画像からレシート情報を正確に読み取ってください。
+もし画像内に複数のレシートが含まれている場合、それらを個別のレシートとして判別し、それぞれ別々に抽出してください。
 
-    const promptText = `このレシート画像から、店舗名、日付、各購入品目（商品名、金額、カテゴリ）、合計金額、支払方法を正確に抽出してください。
+カテゴリは必ず以下のキーのいずれか1つに分類してください：
+- "food": 食費
+- "eatingOut": 外食
+- "daily": 日用品
+- "childcare": 子ども
+- "transport": 交通費
+- "housing": 住居
+- "utility": 水道光熱費
+- "telecom": 通信費
+- "medical": 医療
+- "beautyClothing": 美容・衣服
+- "hobby": 趣味
+- "education": 教育
+- "subscription": サブスク
+- "special": 特別費
+- "insurance": 保険
+- "taxes": 税金
+- "savings": 貯金
+- "debtRepayment": 借入返済
+- "other": その他
 
-カテゴリは以下のいずれか1つに分類してください:
-- "food": 食品、飲料、外食、調味料、お菓子
-- "daily": 日用品、薬、洗剤、衛生用品、文房具
-- "utility": 水道光熱費、通信費、交通費
-- "other": その他、税金、手数料
-
-必ず以下のフォーマットのJSONのみを出力してください。余計な説明文章は一切不要です：
+必ず以下のフォーマットのJSONのみを出力してください：
 {
-  "storeName": "店舗名（不明な場合は〇〇パン屋等）",
-  "date": "YYYY-MM-DD",
-  "totalAmount": 数値（例: 1120）,
-  "paymentMethod": "現金 / クレジットカード / PayPay / 電子マネー 等",
-  "items": [
+  "receipts": [
     {
-      "name": "商品名品目",
-      "price": 金額数値（例: 179）,
-      "category": "food または daily または utility または other"
+      "storeName": "店舗名",
+      "date": "YYYY-MM-DD",
+      "totalAmount": 数値,
+      "paymentMethod": "支払方法",
+      "items": [
+        {
+          "name": "商品名",
+          "price": 金額数値,
+          "category": "英語カテゴリキー"
+        }
+      ]
     }
   ]
 }`;
 
-    try {
-      const imagePart = {
-        inlineData: {
-          data: cleanBase64,
-          mimeType: finalMimeType
+    // Google API の正格接続エンドポイント群
+    const ENDPOINTS = [
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+      "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+    ];
+
+    let lastErrorMsg = "";
+
+    for (const baseUrl of ENDPOINTS) {
+      // 1. x-goog-api-key ヘッダー形式 2. ?key= クエリ形式
+      const reqConfigs = [
+        {
+          url: baseUrl,
+          headers: {
+            "Content-Type": "application/json",
+            "x-goog-api-key": cleanKey
+          }
+        },
+        {
+          url: `${baseUrl}?key=${cleanKey}`,
+          headers: {
+            "Content-Type": "application/json"
+          }
         }
-      };
+      ];
 
-      const result = await model.generateContent([promptText, imagePart]);
-      const response = await result.response;
-      let text = response.text();
+      for (const cfg of reqConfigs) {
+        try {
+          const response = await fetch(cfg.url, {
+            method: "POST",
+            headers: cfg.headers,
+            body: JSON.stringify({
+              contents: [
+                {
+                  role: "user",
+                  parts: [
+                    { text: promptText },
+                    {
+                      inline_data: {
+                        mime_type: finalMimeType,
+                        data: cleanBase64
+                      }
+                    }
+                  ]
+                }
+              ],
+              generationConfig: {
+                response_mime_type: "application/json"
+              }
+            })
+          });
 
-      if (text) {
-        text = text.replace(/```json/g, "").replace(/```/g, "").trim();
-        return JSON.parse(text);
+          if (!response.ok) {
+            const errJson = await response.json().catch(() => ({}));
+            lastErrorMsg = errJson.error?.message || `HTTP ${response.status}`;
+            console.warn(`[ReceiptScanner] Endpoint ${cfg.url} error:`, lastErrorMsg);
+            continue;
+          }
+
+          const data = await response.json();
+          const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (text) {
+            const cleanText = text.replace(/```json/g, "").replace(/```/g, "").trim();
+            const match = cleanText.match(/\{[\s\S]*\}/);
+            let jsonCandidate = match ? match[0] : cleanText;
+
+            let parsed = null;
+            try {
+              parsed = JSON.parse(jsonCandidate);
+            } catch {
+              try {
+                parsed = JSON.parse(jsonCandidate + "}]}}");
+              } catch {}
+            }
+
+            if (parsed) {
+              if (!parsed.receipts && parsed.items) return { receipts: [parsed] };
+              if (parsed.receipts) return parsed;
+            }
+          }
+        } catch (e) {
+          lastErrorMsg = e.message;
+          continue;
+        }
       }
-      throw new Error("AIから有効なテキスト応答が得られませんでした。");
-    } catch (err) {
-      console.error("Gemini API Error Detail:", err);
-      throw new Error(err.message || "Gemini APIでの画像解析に失敗しました。キーの権限や画像形式を確認してください。");
     }
+
+    throw new Error(lastErrorMsg || "AIでのレシート解析に失敗しました。画像のピントや明るさをご確認ください。");
   };
 
   // スキャン実行
@@ -182,13 +418,14 @@ export default function ReceiptScanner({ apiKey, onAddExpenses }) {
     if (!imagePreviewUrl) return;
     setIsScanning(true);
     setErrorMessage("");
+    setExcludedIndexes([]); // 除外設定を初期化
 
     try {
       if (!apiKey) {
         // APIキー未設定の場合、テスト用ダミー解析を実行
         await new Promise((res) => setTimeout(res, 1200));
         setScanResult({
-          ...SAMPLE_RECEIPTS[0],
+          receipts: [SAMPLE_RECEIPTS[0]],
           isDemoResult: true
         });
       } else {
@@ -201,43 +438,50 @@ export default function ReceiptScanner({ apiKey, onAddExpenses }) {
       }
     } catch (err) {
       console.error("AI Scan Error:", err);
-      setErrorMessage(err.message || "レシートの解析に失敗しました。");
+      const rawMsg = err.message || err.toString() || "不明なエラー";
+      setErrorMessage(`⚠️ 解析エラーが発生しました: ${rawMsg}`);
     } finally {
       setIsScanning(false);
     }
   };
 
-  // デモ用サンプルレシートを適用
-  const applySampleReceipt = (sample) => {
-    setSelectedImage(null);
-    setImagePreviewUrl("https://images.unsplash.com/photo-1554415707-6e8cfc93fe23?auto=format&fit=crop&w=600&q=80");
-    setScanResult({
-      ...sample,
-      id: Date.now().toString()
-    });
-  };
-
   // 家計簿データへの確定登録
   const handleConfirmAdd = () => {
-    if (!scanResult || !scanResult.items) return;
+    if (!scanResult || !scanResult.receipts || !Array.isArray(scanResult.receipts)) return;
     
-    const formattedExpenses = scanResult.items.map((item, idx) => ({
-      id: `${Date.now()}-${idx}`,
-      storeName: scanResult.storeName || "不明な店舗",
-      date: scanResult.date || new Date().toISOString().split("T")[0],
-      name: item.name,
-      price: Number(item.price) || 0,
-      category: item.category || "food",
-      paymentMethod: scanResult.paymentMethod || "現金",
-      createdAt: new Date().toISOString()
-    }));
+    // 全てのレシートの全品目をフラットな配列としてまとめる
+    const allFormattedExpenses = [];
+    scanResult.receipts.forEach((receipt, rIdx) => {
+      // ユーザーが除外に設定したレシートはスキップ
+      if (excludedIndexes.includes(rIdx)) return;
+      if (!receipt.items) return;
+      
+      receipt.items.forEach((item, idx) => {
+        allFormattedExpenses.push({
+          id: `${Date.now()}-${rIdx}-${idx}`,
+          storeName: receipt.storeName || "不明な店舗",
+          date: receipt.date || new Date().toISOString().split("T")[0],
+          name: item.name,
+          price: Number(item.price) || 0,
+          category: item.category || "food",
+          paymentMethod: receipt.paymentMethod || "現金",
+          createdAt: new Date().toISOString()
+        });
+      });
+    });
 
-    onAddExpenses(formattedExpenses);
+    if (allFormattedExpenses.length === 0) {
+      alert("登録対象のレシートがありません。");
+      return;
+    }
+
+    onAddExpenses(allFormattedExpenses);
     
     // リセット
     setSelectedImage(null);
     setImagePreviewUrl(null);
     setScanResult(null);
+    setExcludedIndexes([]);
   };
 
   return (
@@ -248,26 +492,8 @@ export default function ReceiptScanner({ apiKey, onAddExpenses }) {
           AIレシート撮影・自動入力
         </h2>
         <span className="badge badge-food">
-          <Sparkles size={14} /> Gemini 2.5 Vision
+          <Sparkles size={14} /> Gemini AI 高速解析
         </span>
-      </div>
-
-      {/* サンプル用テストボタン */}
-      <div style={{ marginBottom: "1.25rem", padding: "0.75rem", background: "rgba(99, 102, 241, 0.08)", border: "1px solid rgba(99, 102, 241, 0.2)", borderRadius: "var(--radius-md)" }}>
-        <p style={{ fontSize: "0.8rem", fontWeight: "700", color: "#a5b4fc", marginBottom: "0.5rem", display: "flex", alignItems: "center", gap: "0.35rem" }}>
-          <Zap size={14} /> 写真がない時のクイックテスト（タップで即時解析デモ）:
-        </p>
-        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
-          {SAMPLE_RECEIPTS.map((sample) => (
-            <button
-              key={sample.id}
-              className="btn btn-secondary btn-sm"
-              onClick={() => applySampleReceipt(sample)}
-            >
-              {sample.label}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* ドロップゾーン & カメラアップロードエリア */}
@@ -275,7 +501,7 @@ export default function ReceiptScanner({ apiKey, onAddExpenses }) {
         className="scanner-viewport"
         onDragOver={(e) => e.preventDefault()}
         onDrop={handleDrop}
-        style={{ cursor: "pointer" }}
+        style={{ cursor: "pointer", marginBottom: "1.25rem" }}
         onClick={() => fileInputRef.current?.click()}
       >
         {isScanning && <div className="scanner-laser"></div>}
@@ -308,52 +534,54 @@ export default function ReceiptScanner({ apiKey, onAddExpenses }) {
         />
       </div>
 
-      {/* エラーメッセージ */}
+      {/* エラーメッセージ ＆ 自己診断ツール */}
       {errorMessage && (
-        <div style={{ marginTop: "1rem", padding: "0.75rem", background: "rgba(244, 63, 94, 0.12)", border: "1px solid rgba(244, 63, 94, 0.3)", borderRadius: "var(--radius-md)", color: "#fda4af", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <AlertCircle size={18} />
-          <span>{errorMessage}</span>
+        <div style={{ marginTop: "1rem", padding: "0.85rem", background: "rgba(244, 63, 94, 0.12)", border: "1px solid rgba(244, 63, 94, 0.3)", borderRadius: "var(--radius-md)", color: "#fda4af", fontSize: "0.85rem", display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
+            <AlertCircle size={18} style={{ flexShrink: 0, marginTop: "2px" }} />
+            <span style={{ lineHeight: "1.4", wordBreak: "break-word" }}>{errorMessage}</span>
+          </div>
+
+          <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.25rem", pt: "0.5rem", borderTop: "1px dashed rgba(244, 63, 94, 0.3)" }}>
+            <button
+              type="button"
+              onClick={testApiKeyConnection}
+              style={{ background: "rgba(255, 255, 255, 0.1)", border: "1px solid rgba(255, 255, 255, 0.2)", borderRadius: "6px", color: "#fff", padding: "0.35rem 0.75rem", fontSize: "0.75rem", fontWeight: "bold", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.3rem" }}
+            >
+              🧪 APIキー接続テストを実行
+            </button>
+          </div>
         </div>
       )}
 
-      {/* スキャンボタン制御 */}
-      <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.25rem" }}>
-        {imagePreviewUrl && !scanResult && (
-          <button
-            className="btn btn-primary"
-            style={{ flex: 1 }}
-            onClick={startScan}
-            disabled={isScanning}
-          >
-            {isScanning ? (
-              <>
-                <RefreshCw size={18} className="animate-spin" /> AIがレシートを読解中...
-              </>
-            ) : (
-              <>
-                <Sparkles size={18} /> AIでレシートを全自動パース
-              </>
-            )}
-          </button>
+      {/* 解析中ステータスおよびクリアボタン */}
+      <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.25rem", flexDirection: "column", alignItems: "stretch" }}>
+        {isScanning && (
+          <div style={{ padding: "0.75rem", background: "rgba(99, 102, 241, 0.12)", border: "1px solid rgba(99, 102, 241, 0.3)", borderRadius: "var(--radius-md)", color: "#a5b4fc", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "0.5rem", justifyContent: "center" }}>
+            <RefreshCw size={18} className="animate-spin" />
+            <span style={{ fontWeight: "700" }}>AIがレシートを読解中です。しばらくお待ちください...</span>
+          </div>
         )}
 
-        {imagePreviewUrl && (
+        {imagePreviewUrl && !isScanning && (
           <button
             className="btn btn-secondary"
+            style={{ width: "100%" }}
             onClick={() => {
               setSelectedImage(null);
               setImagePreviewUrl(null);
               setScanResult(null);
+              setErrorMessage("");
             }}
           >
-            クリア
+            写真をクリアしてやり直す
           </button>
         )}
       </div>
 
       {/* 解析結果プレビュー & 確認モーダル/カード */}
-      {scanResult && (
-        <div style={{ marginTop: "1.5rem", padding: "1.25rem", background: "rgba(15, 23, 42, 0.8)", border: "1px solid var(--border-glow)", borderRadius: "var(--radius-md)", boxShadow: "var(--shadow-lg)" }} className="animate-fade-in">
+      {scanResult && scanResult.receipts && Array.isArray(scanResult.receipts) && (
+        <div id="scan-result-card" style={{ marginTop: "1.5rem", padding: "1.25rem", background: "rgba(15, 23, 42, 0.8)", border: "1px solid var(--border-glow)", borderRadius: "var(--radius-md)", boxShadow: "var(--shadow-lg)" }} className="animate-fade-in">
           {scanResult.isDemoResult && (
             <div style={{ marginBottom: "1rem", padding: "0.75rem", background: "rgba(245, 158, 11, 0.15)", border: "1px solid rgba(245, 158, 11, 0.4)", borderRadius: "var(--radius-md)", fontSize: "0.825rem", color: "#fbbf24" }}>
               <strong>⚠️ 【デモモードのダミー結果です】</strong><br />
@@ -363,48 +591,145 @@ export default function ReceiptScanner({ apiKey, onAddExpenses }) {
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "1rem", paddingBottom: "0.5rem", borderBottom: "1px solid var(--border-color)" }}>
             <span style={{ fontWeight: "800", color: scanResult.isDemoResult ? "#fbbf24" : "#34d399", display: "flex", alignItems: "center", gap: "0.4rem" }}>
-              <CheckCircle2 size={18} /> {scanResult.isDemoResult ? "デモ解析結果 (テストデータ)" : "AI本番解読が完了しました！"}
+              <CheckCircle2 size={18} /> {scanResult.isDemoResult ? "デモ解析結果 (テストデータ)" : `AI本番解読が完了しました！ (レシート ${scanResult.receipts.length} 枚)`}
             </span>
-            <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>{scanResult.items?.length || 0} 品目を抽出</span>
+            <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+              計 {scanResult.receipts.reduce((sum, r) => sum + (r.items?.length || 0), 0)} 品目を抽出
+            </span>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.75rem", marginBottom: "1rem" }}>
-            <div style={{ background: "rgba(255, 255, 255, 0.03)", padding: "0.5rem 0.75rem", borderRadius: "var(--radius-sm)" }}>
-              <span style={{ fontSize: "0.7rem", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "0.2rem" }}><Building2 size={12}/> 店舗名</span>
-              <p style={{ fontWeight: "700", fontSize: "0.9rem", marginTop: "0.1rem" }}>{scanResult.storeName || "不明"}</p>
-            </div>
-            <div style={{ background: "rgba(255, 255, 255, 0.03)", padding: "0.5rem 0.75rem", borderRadius: "var(--radius-sm)" }}>
-              <span style={{ fontSize: "0.7rem", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "0.2rem" }}><Calendar size={12}/> 購入日</span>
-              <p style={{ fontWeight: "700", fontSize: "0.9rem", marginTop: "0.1rem" }}>{scanResult.date}</p>
-            </div>
-            <div style={{ background: "rgba(255, 255, 255, 0.03)", padding: "0.5rem 0.75rem", borderRadius: "var(--radius-sm)" }}>
-              <span style={{ fontSize: "0.7rem", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "0.2rem" }}><CreditCard size={12}/> 決済方法</span>
-              <p style={{ fontWeight: "700", fontSize: "0.9rem", marginTop: "0.1rem" }}>{scanResult.paymentMethod}</p>
-            </div>
-          </div>
+          {/* 各レシートの情報を並べて表示 */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem", marginBottom: "1.25rem" }}>
+            {scanResult.receipts.map((receipt, rIdx) => {
+              const subTotal = receipt.totalAmount || (receipt.items || []).reduce((sum, item) => sum + Number(item.price || 0), 0);
+              const isExcluded = excludedIndexes.includes(rIdx);
+              const duplicate = checkDuplicate(receipt);
 
-          {/* 品目リスト */}
-          <div style={{ maxHeight: "220px", overflowY: "auto", marginBottom: "1rem" }}>
-            {scanResult.items.map((item, idx) => (
-              <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.5rem 0.75rem", background: "rgba(255,255,255,0.02)", borderBottom: "1px solid rgba(255,255,255,0.04)", fontSize: "0.85rem" }}>
-                <span>{item.name}</span>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                  <span className={`badge badge-${item.category}`}>{item.category}</span>
-                  <span style={{ fontWeight: "700", color: "#f43f5e" }}>¥{Number(item.price).toLocaleString()}</span>
+              return (
+                <div
+                  key={rIdx}
+                  style={{
+                    background: isExcluded ? "rgba(255, 255, 255, 0.01)" : "rgba(255, 255, 255, 0.02)",
+                    border: isExcluded ? "1px dashed rgba(255, 255, 255, 0.1)" : "1px solid rgba(255, 255, 255, 0.05)",
+                    opacity: isExcluded ? 0.45 : 1,
+                    borderRadius: "var(--radius-md)",
+                    padding: "1rem",
+                    transition: "all 0.2s ease"
+                  }}
+                >
+                  {/* ヘッダー */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.75rem", borderBottom: "1px dashed rgba(255, 255, 255, 0.1)", paddingBottom: "0.5rem" }}>
+                    <span style={{ fontWeight: "800", fontSize: "0.9rem", color: isExcluded ? "var(--text-muted)" : "var(--accent-secondary)" }}>
+                      📄 レシート #{rIdx + 1} {isExcluded && "(一時除外中)"}
+                    </span>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+                      {!isExcluded && (
+                        <span style={{ fontSize: "0.8rem", fontWeight: "700", color: "#f43f5e" }}>
+                          小計: ¥{Number(subTotal).toLocaleString()}
+                        </span>
+                      )}
+                      <button
+                        className="btn btn-sm"
+                        style={{
+                          padding: "0.2rem 0.5rem",
+                          fontSize: "0.7rem",
+                          borderRadius: "var(--radius-sm)",
+                          backgroundColor: isExcluded ? "rgba(99, 102, 241, 0.2)" : "rgba(244, 63, 94, 0.15)",
+                          color: isExcluded ? "#a5b4fc" : "#fca5a5",
+                          border: isExcluded ? "1px solid rgba(99, 102, 241, 0.4)" : "1px solid rgba(244, 63, 94, 0.3)"
+                        }}
+                        onClick={() => toggleExclude(rIdx)}
+                      >
+                        {isExcluded ? "➕ 登録に含める" : "➖ 今回は除外する"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 重複警告表示 */}
+                  {!isExcluded && duplicate && (
+                    <div style={{
+                      marginBottom: "0.75rem",
+                      padding: "0.5rem 0.75rem",
+                      background: "rgba(244, 63, 94, 0.12)",
+                      border: "1px solid rgba(244, 63, 94, 0.3)",
+                      borderRadius: "var(--radius-sm)",
+                      color: "#fda4af",
+                      fontSize: "0.75rem",
+                      display: "flex",
+                      alignItems: "flex-start",
+                      gap: "0.35rem"
+                    }}>
+                      <span style={{ fontSize: "0.9rem", lineHeight: "1" }}>⚠️</span>
+                      <div>
+                        <strong>重複登録の可能性あり:</strong><br />
+                        すでに {duplicate.date} に「{duplicate.storeName}」で『{duplicate.name}』(¥{Number(duplicate.price).toLocaleString()}) などの支出明細が登録されています。
+                      </div>
+                    </div>
+                  )}
+
+                  {!isExcluded && (
+                    <>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem", marginBottom: "0.75rem" }}>
+                        <div style={{ background: "rgba(255, 255, 255, 0.03)", padding: "0.4rem 0.5rem", borderRadius: "var(--radius-sm)" }}>
+                          <span style={{ fontSize: "0.65rem", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "0.15rem" }}><Building2 size={10}/> 店舗名</span>
+                          <p style={{ fontWeight: "700", fontSize: "0.85rem", marginTop: "0.1rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{receipt.storeName || "不明"}</p>
+                        </div>
+                        <div style={{ background: "rgba(255, 255, 255, 0.03)", padding: "0.4rem 0.5rem", borderRadius: "var(--radius-sm)" }}>
+                          <span style={{ fontSize: "0.65rem", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "0.15rem" }}><Calendar size={10}/> 購入日</span>
+                          <p style={{ fontWeight: "700", fontSize: "0.85rem", marginTop: "0.1rem" }}>{receipt.date}</p>
+                        </div>
+                        <div style={{ background: "rgba(255, 255, 255, 0.03)", padding: "0.4rem 0.5rem", borderRadius: "var(--radius-sm)" }}>
+                          <span style={{ fontSize: "0.65rem", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "0.15rem" }}><CreditCard size={10}/> 決済</span>
+                          <p style={{ fontWeight: "700", fontSize: "0.85rem", marginTop: "0.1rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{receipt.paymentMethod}</p>
+                        </div>
+                      </div>
+
+                      {/* 品目リスト */}
+                      <div style={{ maxHeight: "150px", overflowY: "auto", background: "rgba(0, 0, 0, 0.15)", borderRadius: "var(--radius-sm)" }}>
+                        {receipt.items && receipt.items.map((item, idx) => (
+                          <div key={idx} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.4rem 0.6rem", borderBottom: "1px solid rgba(255,255,255,0.03)", fontSize: "0.8rem" }}>
+                            <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "55%" }}>{item.name}</span>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                              <span className={`badge badge-${item.category}`} style={{ fontSize: "0.65rem", padding: "0.15rem 0.35rem" }}>{item.category}</span>
+                              <span style={{ fontWeight: "700", color: "#f43f5e" }}>¥{Number(item.price).toLocaleString()}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+
+                  {isExcluded && (
+                    <div style={{ textAlign: "center", padding: "0.5rem", color: "var(--text-secondary)", fontSize: "0.8rem", fontWeight: "600" }}>
+                      🔕 このレシートの明細は登録されません
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
-            <span style={{ fontWeight: "700" }}>合計金額:</span>
-            <span style={{ fontSize: "1.4rem", fontWeight: "900", color: "#f43f5e" }}>
-              ¥{Number(scanResult.totalAmount || scanResult.items.reduce((a,b)=>a+Number(b.price),0)).toLocaleString()}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem", borderTop: "1px solid var(--border-color)", paddingTop: "0.75rem" }}>
+            <span style={{ fontWeight: "800", fontSize: "1rem" }}>総合計金額 (登録対象のみ):</span>
+            <span style={{ fontSize: "1.5rem", fontWeight: "900", color: "#f43f5e" }}>
+              ¥{Number(
+                scanResult.receipts
+                  .filter((_, idx) => !excludedIndexes.includes(idx))
+                  .reduce((sum, r) => sum + (r.totalAmount || (r.items || []).reduce((s, i) => s + Number(i.price || 0), 0)), 0)
+              ).toLocaleString()}
             </span>
           </div>
 
-          <button className="btn btn-success" style={{ width: "100%" }} onClick={handleConfirmAdd}>
-            <Plus size={18} /> 家計簿にこの明細を一括登録する
+          <button
+            className="btn btn-success"
+            style={{ width: "100%", padding: "0.75rem", fontSize: "0.95rem" }}
+            onClick={handleConfirmAdd}
+            disabled={scanResult.receipts.length === excludedIndexes.length}
+          >
+            <Plus size={20} />
+            {scanResult.receipts.length === excludedIndexes.length
+              ? "登録対象がありません"
+              : `対象の明細（計 ${scanResult.receipts.filter((_, idx) => !excludedIndexes.includes(idx)).reduce((sum, r) => sum + (r.items?.length || 0), 0)}件）を一括登録する`}
           </button>
         </div>
       )}

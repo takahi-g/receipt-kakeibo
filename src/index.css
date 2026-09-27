@@ -114,15 +114,16 @@ h1 {
   display: flex;
   justify-content: center;
   gap: 0.5rem;
-  margin: 1.5rem 0;
-  background: rgba(15, 23, 42, 0.6);
-  padding: 0.35rem;
+  margin: 2rem auto;
+  background: rgba(30, 41, 59, 0.85);
+  padding: 0.45rem;
   border-radius: var(--radius-full);
-  border: 1px solid var(--border-color);
+  border: 1.5px solid rgba(99, 102, 241, 0.5); /* 枠線を目立たせる */
   max-width: fit-content;
   margin-left: auto;
   margin-right: auto;
   backdrop-filter: blur(12px);
+  box-shadow: 0 0 25px rgba(99, 102, 241, 0.35), inset 0 0 10px rgba(99, 102, 241, 0.1); /* ネオンライトのような浮き出たグロー効果 */
 }
 
 .tab-btn {
@@ -340,10 +341,12 @@ h1 {
   font-weight: 700;
 }
 
-.badge-food { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-.badge-daily { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
-.badge-utility { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
-.badge-other { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+.badge-food, .badge-eatingOut { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+.badge-daily, .badge-childcare, .badge-medical, .badge-beautyClothing { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+.badge-transport, .badge-housing, .badge-utility, .badge-telecom { background: rgba(251, 191, 36, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.3); }
+.badge-hobby, .badge-education, .badge-subscription, .badge-special { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+.badge-insurance, .badge-taxes, .badge-savings, .badge-debtRepayment { background: rgba(244, 63, 94, 0.15); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.3); }
+.badge-other { background: rgba(255, 255, 255, 0.08); color: var(--text-secondary); border: 1px solid var(--border-color); }
 
 /* Expense Item List Row */
 .expense-item {
@@ -451,3 +454,284 @@ h1 {
 .animate-fade-in {
   animation: fadeIn 0.35s ease-out forwards;
 }
+
+/* iPhone/Mobile Specific Optimization */
+@media (max-width: 600px) {
+  .container {
+    padding: 0.5rem 0.75rem;
+  }
+  body {
+    padding-bottom: 2rem;
+  }
+  
+  /* Header spacing */
+  header {
+    padding: 0.5rem 0 0.75rem;
+  }
+  h1 {
+    font-size: 1.45rem;
+    margin-bottom: 0.25rem;
+  }
+  .subtitle {
+    font-size: 0.75rem;
+    line-height: 1.3;
+  }
+  .logo-badge {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.725rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Nav tabs (iPhone等で文字を大きくしてもはみ出さず、横スクロールできるように改善) */
+  .nav-tabs {
+    margin: 0.5rem 0 0.85rem;
+    padding: 0.2rem;
+    width: 100%;
+    max-width: 100%;
+    gap: 0.25rem;
+    display: flex;
+    justify-content: flex-start;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    border-radius: var(--radius-full);
+  }
+  .nav-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .tab-btn {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+    justify-content: center;
+    gap: 0.25rem;
+    border-radius: var(--radius-full);
+    white-space: nowrap;
+  }
+  .text-size-large .tab-btn {
+    font-size: 0.85rem !important; /* 大きめモードでも少し控えめにして収まりを良く */
+    padding: 0.5rem 0.85rem !important;
+  }
+  .text-size-large h1 {
+    font-size: 1.5rem !important; /* スマートAIレシート家計簿が1行で収まるように制限 */
+    word-break: keep-all;
+  }
+  
+  /* Glass Cards spacing */
+  .card {
+    padding: 0.85rem;
+    border-radius: var(--radius-md);
+  }
+  .card-header {
+    margin-bottom: 0.65rem;
+    padding-bottom: 0.4rem;
+  }
+  .card-title {
+    font-size: 0.95rem;
+    gap: 0.4rem;
+  }
+  
+  /* Dashboard Stat Boxes */
+  .stat-box {
+    padding: 0.45rem 0.35rem;
+    border-radius: var(--radius-sm);
+  }
+  .stat-val {
+    font-size: 1.15rem;
+  }
+  .stat-lbl {
+    font-size: 0.625rem;
+  }
+  
+  /* Forms compacting */
+  .form-group {
+    margin-bottom: 0.65rem;
+  }
+  .form-group label {
+    font-size: 0.725rem;
+    margin-bottom: 0.25rem;
+  }
+  .input-style {
+    padding: 0.45rem 0.75rem;
+    font-size: 0.825rem;
+    border-radius: var(--radius-sm);
+  }
+  
+  /* Scanner Viewport */
+  .scanner-viewport {
+    height: 190px;
+    border-radius: var(--radius-sm);
+  }
+  
+  /* Expense row compacting */
+  .expense-item {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.75rem 0.85rem;
+    margin-bottom: 0.65rem;
+    border-radius: var(--radius-md);
+    gap: 0.6rem;
+  }
+  .expense-main {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+  }
+  .expense-icon-box {
+    width: 38px;
+    height: 38px;
+    font-size: 1.1rem;
+    border-radius: var(--radius-sm);
+  }
+  .expense-info {
+    flex: 1;
+  }
+  .expense-info h4 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    max-width: none !important;
+    white-space: normal !important;
+    word-break: break-all;
+    line-height: 1.3;
+  }
+  .expense-info p {
+    font-size: 0.75rem;
+    margin-top: 0.2rem;
+    color: var(--text-secondary);
+  }
+  /* 下段：カテゴリバッジ、金額、操作ボタン */
+  .expense-item > div:last-child {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 0.6rem;
+    margin-top: 0.1rem;
+    gap: 0.5rem;
+  }
+  .expense-price {
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin-left: auto;
+    margin-right: 0.5rem;
+    white-space: nowrap;
+  }
+  .badge {
+    font-size: 0.675rem;
+    padding: 0.125rem 0.4rem;
+  }
+  .btn {
+    padding: 0.45rem 0.85rem;
+    font-size: 0.775rem;
+    border-radius: var(--radius-sm);
+  }
+  .btn-sm {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.7rem;
+  }
+}
+
+/* 老眼・文字大対応 (Text Size Large) - すべてのテキスト要素を網羅的に1.2倍〜1.3倍に拡大 */
+.text-size-large {
+  font-size: 1.25rem !important; /* 全体のベースを大きく */
+}
+.text-size-large h1 {
+  font-size: 1.95rem !important;
+}
+.text-size-large .subtitle {
+  font-size: 0.95rem !important;
+}
+.text-size-large h2, 
+.text-size-large .card-title {
+  font-size: 1.3rem !important;
+}
+.text-size-large h3 {
+  font-size: 1.15rem !important;
+}
+.text-size-large h4, 
+.text-size-large .expense-info h4 {
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+}
+.text-size-large .expense-info p,
+.text-size-large .expense-info span {
+  font-size: 0.875rem !important; /* 店舗名、日付 */
+  font-weight: 600 !important;
+}
+.text-size-large .expense-price {
+  font-size: 1.4rem !important;
+  font-weight: 900 !important;
+}
+.text-size-large .badge {
+  font-size: 0.85rem !important;
+  padding: 0.25rem 0.65rem !important;
+}
+.text-size-large .input-style, 
+.text-size-large select,
+.text-size-large input {
+  font-size: 1.1rem !important;
+  font-weight: 700 !important;
+  padding: 0.6rem 0.85rem !important;
+}
+.text-size-large label {
+  font-size: 0.95rem !important;
+  font-weight: 800 !important;
+}
+.text-size-large .stat-val {
+  font-size: 1.65rem !important;
+  font-weight: 900 !important;
+}
+.text-size-large .stat-lbl {
+  font-size: 0.85rem !important;
+  font-weight: 700 !important;
+}
+.text-size-large .tab-btn {
+  font-size: 1.05rem !important;
+  padding: 0.6rem 0.75rem !important;
+}
+
+/* 大きめ文字モード時のテーブルの文字サイズ・レイアウト拡張 */
+.text-size-large table {
+  font-size: 1.05rem !important;
+}
+.text-size-large table th,
+.text-size-large table td {
+  font-size: 1.05rem !important;
+  padding: 0.8rem 0.6rem !important; /* 行間とセル余白を広げて視認性を劇的に向上 */
+}
+.text-size-large table input {
+  font-size: 1.05rem !important;
+  width: 100px !important;
+}
+.text-size-large .btn {
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+}
+.text-size-large .btn-sm {
+  font-size: 0.875rem !important;
+  padding: 0.4rem 0.75rem !important;
+}
+.text-size-large .scanner-viewport p {
+  font-size: 1.15rem !important;
+  font-weight: 800 !important;
+  line-height: 1.4 !important;
+}
+.text-size-large span,
+.text-size-large p,
+.text-size-large li,
+.text-size-large div {
+  /* 未指定の一般的なテキスト要素も1.1倍に引き上げ */
+  font-size: 1.05rem;
+}
+.text-size-large .logo-badge span {
+  font-size: 0.85rem !important;
+}
+.text-size-large .logo-badge {
+  padding: 0.35rem 0.85rem !important;
+}
+
+
