@@ -102,8 +102,7 @@ export default function ReceiptScanner({ apiKey, onAddExpenses, expenses = [] })
 
     for (const m of candidateModels) {
       const configs = [
-        { url: m.base, headers: { "Content-Type": "application/json", "x-goog-api-key": cleanKey } },
-        { url: `${m.base}?key=${cleanKey}`, headers: { "Content-Type": "application/json" } }
+        { url: `${m.base}?key=${cleanKey}`, headers: { "Content-Type": "application/json", "x-goog-api-key": cleanKey } }
       ];
 
       for (const cfg of configs) {
