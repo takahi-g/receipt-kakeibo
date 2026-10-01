@@ -259,7 +259,9 @@ export default function ReceiptScanner({ apiKey, onAddExpenses, expenses = [] })
       }
     } catch (err) {
       console.error("AI Auto Scan Error:", err);
-      const rawMsg = err.message || err.toString() || "不明なエラー";
+      const rawMsg = typeof err === "object" && err !== null && err.message 
+        ? err.message 
+        : (typeof err === "string" ? err : JSON.stringify(err));
       setErrorMessage(`⚠️ レシートAI解析エラー: ${rawMsg}`);
     } finally {
       setIsScanning(false);
@@ -285,7 +287,9 @@ export default function ReceiptScanner({ apiKey, onAddExpenses, expenses = [] })
       ? detectedMimeType 
       : "image/jpeg";
 
-    const cleanBase64 = base64Image.replace(/^data:image\/\w+;base64,/, "");
+    const cleanBase64 = base64Image.includes(",") 
+      ? base64Image.split(",")[1] 
+      : base64Image;
     const cleanKey = apiKey.trim();
 
     const promptText = `この画像からレシート情報を正確に読み取ってください。
