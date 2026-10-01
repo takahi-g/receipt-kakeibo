@@ -119,10 +119,11 @@ export default function ReceiptScanner({ apiKey, onAddExpenses, expenses = [] })
             break;
           } else {
             const errData = await res.json().catch(() => ({}));
-            lastErr = errData.error?.message || `HTTP ${res.status}`;
+            const msg = errData.error?.message;
+            lastErr = typeof msg === "string" ? msg : (errData.error ? JSON.stringify(errData.error) : `HTTP ${res.status}`);
           }
         } catch (e) {
-          lastErr = e.message;
+          lastErr = typeof e === "object" && e !== null && e.message ? e.message : String(e);
         }
       }
       if (successModel) break;
@@ -281,6 +282,10 @@ export default function ReceiptScanner({ apiKey, onAddExpenses, expenses = [] })
       throw new Error("Gemini APIキーが設定されていません。右上の「⚙️ アプリの設定」からAPIキーを入力してください。");
     }
 
+    if (typeof base64Image !== "string") {
+      throw new Error("画像データの形式が不正です。もう一度撮影してください。");
+    }
+
     const mimeTypeMatch = base64Image.match(/^data:(image\/\w+);base64,/);
     const detectedMimeType = mimeTypeMatch ? mimeTypeMatch[1] : "image/jpeg";
     const finalMimeType = ["image/jpeg", "image/png", "image/webp"].includes(detectedMimeType) 
@@ -375,7 +380,8 @@ export default function ReceiptScanner({ apiKey, onAddExpenses, expenses = [] })
 
         if (!response.ok) {
           const errJson = await response.json().catch(() => ({}));
-          lastError = errJson.error?.message || `HTTP ${response.status} (${response.statusText})`;
+          const msg = errJson.error?.message;
+          lastError = typeof msg === "string" ? msg : (errJson.error ? JSON.stringify(errJson.error) : `HTTP ${response.status} (${response.statusText})`);
           console.warn(`[Gemini API Warning] ${baseUrl}:`, lastError);
           continue;
         }
