@@ -94,9 +94,9 @@ export default function ReceiptScanner({ apiKey, onAddExpenses, expenses = [] })
     }
     const cleanKey = apiKey.trim();
     const candidateModels = [
-      { name: "gemini-1.5-flash (v1beta)", base: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent" },
-      { name: "gemini-2.0-flash-exp (v1beta)", base: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent" },
-      { name: "gemini-1.5-pro (v1beta)", base: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent" }
+      { name: "gemini-2.5-flash (v1beta)", base: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent" },
+      { name: "gemini-flash-latest (v1beta)", base: "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent" },
+      { name: "gemini-3.8-flash (v1beta)", base: "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent" }
     ];
 
     let successModel = null;
@@ -343,10 +343,9 @@ export default function ReceiptScanner({ apiKey, onAddExpenses, expenses = [] })
 }`;
 
     const candidateEndpoints = [
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent",
-      "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent",
-      "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent"
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent",
+      "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent"
     ];
 
     let lastError = "";
