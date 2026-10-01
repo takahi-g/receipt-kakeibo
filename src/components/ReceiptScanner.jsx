@@ -491,11 +491,16 @@ export default function ReceiptScanner({ apiKey, onAddExpenses, expenses = [] })
 
     onAddExpenses(allFormattedExpenses);
     
-    // リセット
+    // リセット & 完了トースト表示
+    const totalCount = allFormattedExpenses.length;
+    const totalAmount = allFormattedExpenses.reduce((sum, e) => sum + e.price, 0);
     setSelectedImage(null);
     setImagePreviewUrl(null);
     setScanResult(null);
     setExcludedIndexes([]);
+
+    // 成功通知アラート
+    alert(`🎉 家計簿への登録が完了しました！\n\n・追加件数: ${totalCount} 件\n・合計金額: ¥${totalAmount.toLocaleString()}\n\n「明細一覧」タブでいつでも確認・編集できます！`);
   };
 
   return (

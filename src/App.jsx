@@ -97,7 +97,7 @@ const DEFAULT_DEBTS = [
   { id: "debt-5", lender: "大学学費", initial: 321317, paidBefore: 130000 }
 ];
 
-const CURRENT_APP_VERSION = "2026-10-01 14:36:00";
+const CURRENT_APP_VERSION = "2026-10-01 15:02:00";
 
 const LATEST_UPDATE_INFO = {
   version: CURRENT_APP_VERSION,
